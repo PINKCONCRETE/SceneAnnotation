@@ -11,6 +11,7 @@ python scripts/extract_prompt.py \
 import draccus
 import json
 import os
+import re
 import sys
 from dataclasses import dataclass
 from typing import Optional
@@ -48,16 +49,10 @@ def parse_jsonl(jsonl_path):
 
 
 def post_process_response(response):
-    # response = response.replace(',', '.')
-    # objects = list(sorted(set([obj.strip() for obj in response.split('.')])))
-    # objects = filter(lambda x: len(x) > 0, objects)
-    # return ' . '.join(objects) + ' .'
-    # find all text within double quotation marks
-    import re
     pattern = r'"(.*?)"'
     objects = re.findall(pattern, response)
     objects = list(sorted(set([obj.strip() for obj in objects])))
-    return ' . '.join(objects) + ' .'
+    return '. '.join(objects) + '.'
 
 
 @draccus.wrap()

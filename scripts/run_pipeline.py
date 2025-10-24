@@ -1,15 +1,19 @@
 """
 e.g.
+
+cd ~/RoboCoin-scene-annotator
+conda activate dino
+
 python scripts/run_pipeline.py \
-    --repo_root="/home/koorye/.cache/huggingface/lerobot/" \
-    --repo_id="realman_fold_towel" \
+    --repo_id="realman_rmc_aidal_basket_storage_orange" \
+    --repo_root="datasets/" \
     --save_root="results/" \
     --camera="observation.images.cam_high" \
     --detector.type="grounding_dino" \
-    --detector.device=cpu \
+    --detector.device=cuda \
     --detector.visualize_first=5 \
     --language_model.type="ollama" \
-    --language_model.model="deepseek-r1:8b" \
+    --language_model.model="deepseek-r1:14b" \
     --language_model.think=False
 """
 
@@ -23,11 +27,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core.detectors import DetectorConfig
 from core.language_models import LanguageModelConfig
 
-
 from detect import main as detect_main
 from detect import InferenceConfig
 
-from extract_first_frame import main as extract_main
+from extract_first_frame import main_multiprocess as extract_main
 from extract_first_frame import ExtractConfig
 
 from extract_prompt import main as extract_prompt_main
@@ -36,6 +39,9 @@ from extract_prompt import GenerationConfig as PromptGenerationConfig
 from generate import main as generate_main
 from generate import GenerationConfig
 
+
+_FIND_OBJECTS_PROMPT = "You are a text annotation expert. Please help me find the names of all the objects in the instruction. All names are enclosed in double quotation marks " ". Do not include any non-existent objects or additional information. A detailed list of instructions is as follows:\n"
+_GENERATE_PROMPT = "You are a professional annotator, please provide a concise and clear summary in one sentence, describing the position and relationship of each object. Do not add any extra information and answer directly! Here are the objects:\n"
 
 @dataclass
 class PipelineConfig:
@@ -55,7 +61,7 @@ class PipelineConfig:
         )
         self.prompt = PromptGenerationConfig(
             language_model=self.language_model,
-            prompt="You are a text annotation expert. Please help me find the names of all the objects in the instruction (like bowl, plate, block, banana, etc.), including the adjectives describing the objects (like blue bowl, yellow banana) if it exists in the instruction. All names are enclosed in double quotation marks " ". Do not include any non-existent objects or additional information. A detailed list of instructions is as follows:\n",
+            prompt=_FIND_OBJECTS_PROMPT,
             repo_dir=os.path.join(self.repo_root, self.repo_id),
             save_dir=os.path.join(self.save_root, "prompts")
         )
@@ -68,7 +74,7 @@ class PipelineConfig:
         )
         self.generation = GenerationConfig(
             language_model=self.language_model,
-            prompt="You are a professional annotator, please provide a concise and clear summary in one sentence, describing the position and relationship of each object. Do not add any extra information! Here are the objects:\n",
+            prompt=_GENERATE_PROMPT,
             repo_id=self.repo_id,
             json_dir=os.path.join(self.save_root, "annotations"),
             save_dir=os.path.join(self.save_root, "annotations_refined")
@@ -103,6 +109,7 @@ def main(config: PipelineConfig):
     input("Please review the extracted frames and press Enter to continue...")
     print("Generating annotations...")
     print('=' * 40)
+    os.system(f'ollama stop {config.language_model.model}')
     detect_main(config.inference)
 
     input("Please review the detected annotations and press Enter to continue...")

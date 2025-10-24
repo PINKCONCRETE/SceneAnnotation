@@ -7,6 +7,8 @@ from .configuration_language_models import (
     WebApiLanguageModelConfig,
 )
 
+from .cache import Cache
+
 
 class BaseLanguageModel(ABC):
 
@@ -19,6 +21,7 @@ class BaseLanguageModel(ABC):
     ):
         self.config = config
         self.model = self._load_model()
+        self.cache = Cache()
     
     @abstractmethod
     def _load_model(self):
@@ -29,7 +32,12 @@ class BaseLanguageModel(ABC):
         pass
 
     def generate(self, prompt: str, **kwargs) -> str:
-        return self._generate(prompt, **kwargs)
+        if self.cache.len(prompt) > 5:
+            answer = self.cache.get(prompt)
+        else:
+            answer = self._generate(prompt, **kwargs)
+            self.cache.add(prompt, answer)
+        return answer
     
 
 class OllamaLanguageModel(BaseLanguageModel):
