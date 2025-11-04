@@ -30,10 +30,10 @@ conda activate dino
 
 # repo_id这一行需要修改为要处理的数据集
 python scripts/run_pipeline.py \
-    --repo_id="agilex_cobot_decoupled_magic_take_out_the_bread" \
-    --repo_root="/mnt/nas/synnas/docker2/robocoin-datasets" \
+    --repo_id="realman_rmc_aidal_only_test" \
+    --repo_root="/mnt/nas/synnas/docker2/robocoin-datasets-test/" \
     --save_root="results/" \
-    --camera="observation.images.cam_front_rgb" \
+    --camera="observation.images.cam_high_rgb" \
     --detector.type="grounding_dino" \
     --detector.device=cuda \
     --detector.visualize_first=5 \

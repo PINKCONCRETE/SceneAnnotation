@@ -1,0 +1,5 @@
+rich
+matplotlib
+imageio[ffmpeg]
+draccus
+ollama
