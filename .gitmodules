@@ -1,3 +1,7 @@
 [submodule "GroundingDINO"]
 	path = GroundingDINO
 	url = https://github.com/IDEA-Research/GroundingDINO.git
+
+[submodule "third_party/GroundingDINO"]
+	path = third_party/GroundingDINO
+	url = https://github.com/IDEA-Research/GroundingDINO.git
