@@ -85,7 +85,7 @@ class SimpleSceneAnnotationClient(TaskClient):
             
             # Pipeline配置
             pipeline_script = "./scripts/run_pipeline.py"
-            save_root = "/tmp/scene_annotation_results"
+            save_root = "./scene_annotation_results"
             
             # 构建pipeline命令
             cmd = [
