@@ -84,7 +84,7 @@ class SimpleSceneAnnotationClient(TaskClient):
             print(f"🏷️  repo_id: {repo_id}")
             
             # Pipeline配置
-            pipeline_script = "/home/diy02/RoboCoin-scene-annotator/scripts/run_pipeline.py"
+            pipeline_script = "./scripts/run_pipeline.py"
             save_root = "/tmp/scene_annotation_results"
             
             # 构建pipeline命令
@@ -116,7 +116,7 @@ class SimpleSceneAnnotationClient(TaskClient):
             # 执行pipeline命令
             result = subprocess.run(
                 cmd,
-                cwd="/home/diy02/RoboCoin-scene-annotator",
+                cwd=".",
                 capture_output=False,
                 text=True,
                 timeout=3600  # 1小时超时

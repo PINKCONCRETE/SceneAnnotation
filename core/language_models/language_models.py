@@ -32,6 +32,7 @@ class BaseLanguageModel(ABC):
         pass
 
     def generate(self, prompt: str, **kwargs) -> str:
+        
         if self.cache.len(prompt) > 5:
             answer = self.cache.get(prompt)
         else:
@@ -99,6 +100,7 @@ class WebApiLanguageModel(BaseLanguageModel):
 
 
 def get_language_model(config: LanguageModelConfig) -> BaseLanguageModel:
+    print(config)
     if isinstance(config, OllamaLanguageModelConfig):
         return OllamaLanguageModel(config)
     elif isinstance(config, WebApiLanguageModelConfig):

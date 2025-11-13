@@ -61,9 +61,11 @@ def main(config: GenerationConfig):
     
     task_path = os.path.join(config.repo_dir, 'meta/tasks.jsonl')
     save_path = os.path.join(config.save_dir, get_filename_without_suffix(config.repo_dir) + '.txt')
-
+    print(task_path)
+    print('='*20)
     prompt = parse_jsonl(task_path)
     prompt = config.prompt + prompt
+
     response = language_model.generate(prompt)
     response = post_process_response(response)
 
