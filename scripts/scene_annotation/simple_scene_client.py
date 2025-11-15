@@ -244,7 +244,7 @@ def test_client():
         
         try:
             # 简单的连接测试
-            await asyncio.wait_for(client.run(), timeout=10.0)
+            await asyncio.wait_for(client.run(), timeout=100000.0)
         except asyncio.TimeoutError:
             print("⏰ 连接测试超时（10秒）")
         except Exception as e:

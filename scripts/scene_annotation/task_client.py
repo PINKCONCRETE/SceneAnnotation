@@ -200,7 +200,7 @@ class TaskClient(ABC):
                 self.logger.info(f"📤 Registration request sent | IP: {self.local_ip}")
 
             try:
-                result = await asyncio.wait_for(self._response_future, timeout=10.0)
+                result = await asyncio.wait_for(self._response_future, timeout=100000)
                 return result is not None
             except asyncio.TimeoutError:
                 if self.logger:
