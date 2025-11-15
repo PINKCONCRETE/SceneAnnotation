@@ -2,7 +2,7 @@
 results/
 weights/
 datasets/
-
+scene_annotation_results/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

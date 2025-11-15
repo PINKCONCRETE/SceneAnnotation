@@ -8,6 +8,7 @@ import subprocess
 import os
 from pathlib import Path
 import json
+import re
 
 sys.path.insert(0, str(Path(__file__).parent))
 from task_client import TaskClient
@@ -63,7 +64,25 @@ class SimpleSceneAnnotationClient(TaskClient):
                 "error": str(e),
                 "dataset_uuid": dataset_uuid
             }
-    
+            
+    def _find_camera_folder(self, dataset_path: str) -> str:
+        """在video/chunk-000下查找相机文件夹，优先选择包含head/front/high的"""
+        video_path = Path(dataset_path) / "videos" / "chunk-000"
+        if not video_path.exists():
+            print()
+            return "observation.images.cam_high"  # 默认值
+        
+        folders = [f.name for f in video_path.iterdir() if f.is_dir()]
+        
+        # 使用正则表达式按优先级匹配
+        for pattern in [r"head", r"front", r"high"]:
+            for folder in folders:
+                if re.search(pattern, folder, re.IGNORECASE):
+                    return f"{folder}"
+        
+        # 没有匹配则返回第一个文件夹或默认值
+        return f"{folders[0]}" if folders else "observation.images.cam_high"
+
     def _run_scene_annotation_pipeline(self, dataset_uuid: str, leformat_path: str) -> dict:
         """运行场景标注pipeline脚本"""
         
@@ -78,10 +97,15 @@ class SimpleSceneAnnotationClient(TaskClient):
             repo_root = os.path.dirname(dataset_path) + "/"
             repo_id = dataset_name
             
+            # 自动查找相机文件夹
+            camera_folder = self._find_camera_folder(dataset_path)
+            print(camera_folder)
+            
             print(f"📦 数据集UUID: {dataset_uuid}")
             print(f"📁 数据集完整路径: {dataset_path}")
             print(f"📂 repo_root: {repo_root}")
             print(f"🏷️  repo_id: {repo_id}")
+            print(f"📷 相机文件夹: {camera_folder}")
             
             # Pipeline配置
             pipeline_script = "./scripts/run_pipeline.py"
@@ -93,7 +117,7 @@ class SimpleSceneAnnotationClient(TaskClient):
                 f"--repo_id={repo_id}",
                 f"--repo_root={repo_root}",
                 f"--save_root={save_root}",
-                "--camera=observation.images.cam_high",
+                f"--camera={camera_folder}",
                 "--detector.type=grounding_dino",
                 "--detector.device=cuda",
                 "--detector.visualize_first=5",
