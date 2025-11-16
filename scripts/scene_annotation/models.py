@@ -103,6 +103,20 @@ class ObjectDB(Base):
     datasets = relationship("DatasetDB", secondary="dataset_objects", back_populates="objects")
 
 
+class ObjectDB(Base):
+    __tablename__ = "object"
+    id = Column(Integer, primary_key=True, index=True)
+    object_name = Column(String(100), nullable=False, index=True)
+
+    level1_category = Column(String(100), unique=False, nullable=True)
+    level2_category = Column(String(100), unique=False, nullable=True)
+    level3_category = Column(String(100), unique=False, nullable=True)
+    level4_category = Column(String(100), unique=False, nullable=True)
+    level5_category = Column(String(100), unique=False, nullable=True)
+
+    # 反向关系：ObjectDB -> DatasetDB 多对多
+    datasets = relationship("DatasetDB", secondary="dataset_objects", back_populates="objects")
+
 # =====================
 # 多对多关联表
 # =====================

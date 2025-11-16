@@ -73,6 +73,7 @@ def main(config: ExtractConfig):
 
 def extract_first_frame_wrapper(video_paths, save_paths, frames):
     for video_path, save_path in tqdm(list(zip(video_paths, save_paths))):
+        print(video_path)
         frame = extract_first_frame(video_path, save_path)
         frames.append(frame)
 
