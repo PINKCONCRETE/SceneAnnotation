@@ -93,8 +93,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--path",
         type=str,
-        required=True,
         help="Path to the dataset directory",
+        default="/mnt/nas/synnas/docker2/robocoin-datasets/",
     )
     parser.add_argument(
         "--db-path",
