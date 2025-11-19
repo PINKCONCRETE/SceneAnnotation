@@ -134,6 +134,9 @@ if __name__ == "__main__":
                     elif status == 'failed' and not args.force:
                         print(f"\n⚠ Skipping (marked as failed): {target_file}")
                         continue
+                    elif status == 'processing':
+                        print(f"\n⚠ Skipping (currently processing): {target_file}")
+                        continue
                     
                     print(f"\nProcessing file: {target_file}")
                     
