@@ -118,6 +118,8 @@ if __name__ == "__main__":
     try:
         # 只扫描args.path下一层的文件夹，查找annotations/scene_annotations.jsonl
         for subdir in os.listdir(args.path):
+            if subdir != "Rs-01_plug_in_the_cable":
+                continue
             subdir_path = Path(args.path) / subdir
             if subdir_path.is_dir():
                 target_file = subdir_path / "annotations" / "scene_annotations.jsonl"
