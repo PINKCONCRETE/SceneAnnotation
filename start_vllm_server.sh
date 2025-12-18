@@ -2,19 +2,18 @@
 
 # Configuration
 MODEL_ID="Qwen/Qwen2-VL-7B-Instruct"
-PORT=8000
+UDS_PATH="/tmp/vllm-server.sock"
 
 echo "Starting vLLM OpenAI-compatible server..."
 echo "Model: $MODEL_ID"
-echo "Port: $PORT"
+echo "UDS Socket: $UDS_PATH"
 echo "Note: This server will run in the foreground. Press Ctrl+C to stop it."
 
+# Clean up old socket if it exists
+rm -f $UDS_PATH
+
 # Start the server
-# --trust-remote-code: Required for Qwen2-VL
-# --limit-mm-per-prompt image=1: Optimization for single-image prompts
-# --gpu-memory-utilization 0.9: Match the setting that worked in your script
-# --max-model-len 4096: Prevent OOM on long sequences
-# --max-num-seqs 64: Prevent OOM on concurrent requests
+# --uds: Use Unix Domain Socket for IPC (faster than TCP loopback)
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL_ID \
     --trust-remote-code \
@@ -22,4 +21,4 @@ python -m vllm.entrypoints.openai.api_server \
     --gpu-memory-utilization 0.9 \
     --max-model-len 4096 \
     --max-num-seqs 64 \
-    --port $PORT
+    --uds $UDS_PATH

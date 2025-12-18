@@ -2,7 +2,7 @@
 {"episode_idx": 1, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
 {"episode_idx": 2, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
 {"episode_idx": 3, "scene_annotation": "A robot arm is positioned in front of a cardboard box on a white surface."}
-{"episode_idx": 4, "scene_annotation": "A cardboard box is being held by two robotic arms."}
+{"episode_idx": 4, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
 {"episode_idx": 5, "scene_annotation": "A robot arm is holding a cardboard box on a white surface."}
 {"episode_idx": 6, "scene_annotation": "A cardboard box is placed on a white surface, with two black mechanical arms positioned on either side of it."}
 {"episode_idx": 7, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
@@ -43,7 +43,7 @@
 {"episode_idx": 42, "scene_annotation": "A cardboard box is being held by two black metal clamps."}
 {"episode_idx": 43, "scene_annotation": "A cardboard box is being held by two black metal clamps on a white surface."}
 {"episode_idx": 44, "scene_annotation": "A cardboard box with a black mechanical arm attached to it is placed on a white surface."}
-{"episode_idx": 45, "scene_annotation": "A cardboard box with two black mechanical arms attached to it, placed on a white surface."}
+{"episode_idx": 45, "scene_annotation": "Two black mechanical arms are positioned on either side of a cardboard box."}
 {"episode_idx": 46, "scene_annotation": "A cardboard box is being scanned by two robotic arms."}
 {"episode_idx": 47, "scene_annotation": "A cardboard box is being held in place by two black metal clamps."}
 {"episode_idx": 48, "scene_annotation": "A cardboard box is placed on a white surface, with two black metal objects on either side of it."}
@@ -55,14 +55,14 @@
 {"episode_idx": 54, "scene_annotation": "A robot arm is holding a cardboard box on a white table."}
 {"episode_idx": 55, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
 {"episode_idx": 56, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
-{"episode_idx": 57, "scene_annotation": "Two robotic arms are positioned over a cardboard box on a white surface."}
+{"episode_idx": 57, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 58, "scene_annotation": "A cardboard box is being held by a robotic arm on a white surface."}
 {"episode_idx": 59, "scene_annotation": "A cardboard box is being held by two black metal clamps."}
 {"episode_idx": 60, "scene_annotation": "A cardboard box is placed on a white surface, with two black mechanical arms positioned on either side."}
 {"episode_idx": 61, "scene_annotation": "A cardboard box with two black mechanical arms attached to it, placed on a white surface."}
-{"episode_idx": 62, "scene_annotation": "A cardboard box is being held in place by two black metal clamps on a white surface."}
+{"episode_idx": 62, "scene_annotation": "A cardboard box is being held in place by two black metal clamps."}
 {"episode_idx": 63, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
-{"episode_idx": 64, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
+{"episode_idx": 64, "scene_annotation": "A cardboard box is being held by two robotic arms."}
 {"episode_idx": 65, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
 {"episode_idx": 66, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 67, "scene_annotation": "A cardboard box is taped shut with two black mechanical arms positioned on either side."}
@@ -70,7 +70,7 @@
 {"episode_idx": 69, "scene_annotation": "A cardboard box is being held by two robotic arms."}
 {"episode_idx": 70, "scene_annotation": "A cardboard box is being held open by two robotic arms."}
 {"episode_idx": 71, "scene_annotation": "A cardboard box is being held open by two black metal clamps."}
-{"episode_idx": 72, "scene_annotation": "A cardboard box is being held by two robotic arms."}
+{"episode_idx": 72, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
 {"episode_idx": 73, "scene_annotation": "A wooden box is being held by two black mechanical arms on a white surface."}
 {"episode_idx": 74, "scene_annotation": "A cardboard box is being held by two black metal clamps on a white surface."}
 {"episode_idx": 75, "scene_annotation": "A cardboard box is being held open by two black metal clamps."}
@@ -85,14 +85,14 @@
 {"episode_idx": 84, "scene_annotation": "A cardboard box is being held by two black metal clamps on a white surface."}
 {"episode_idx": 85, "scene_annotation": "A large brown box is placed on a white table with two black machines on either side."}
 {"episode_idx": 86, "scene_annotation": "A cardboard box is placed on a white surface with two black mechanical arms on either side."}
-{"episode_idx": 87, "scene_annotation": "A robot arm is holding a cardboard box with tape on it."}
+{"episode_idx": 87, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 88, "scene_annotation": "A cardboard box is being scanned by two robotic arms."}
 {"episode_idx": 89, "scene_annotation": "A cardboard box is placed on a white surface, with two black mechanical arms positioned on either side of it."}
 {"episode_idx": 90, "scene_annotation": "A robot arm is holding a cardboard box on a white surface."}
 {"episode_idx": 91, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 92, "scene_annotation": "A robot arm is holding a cardboard box on a white surface."}
 {"episode_idx": 93, "scene_annotation": "A cardboard box is being held in place by two black mechanical arms on a white surface."}
-{"episode_idx": 94, "scene_annotation": "Two robotic arms are positioned on either side of a wooden board on a white surface."}
+{"episode_idx": 94, "scene_annotation": "Two robotic arms are positioned on either side of a wooden board."}
 {"episode_idx": 95, "scene_annotation": "Two robotic arms are positioned on either side of a wooden box on a white surface."}
 {"episode_idx": 96, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 97, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
@@ -109,22 +109,22 @@
 {"episode_idx": 108, "scene_annotation": "A robot arm is positioned over a cardboard box, possibly preparing to manipulate or inspect it."}
 {"episode_idx": 109, "scene_annotation": "A robot arm is positioned over a cardboard box on a white surface."}
 {"episode_idx": 110, "scene_annotation": "A robot arm is positioned over a large cardboard box on a white surface."}
-{"episode_idx": 111, "scene_annotation": "A robot arm is holding a small black object over a brown cardboard box."}
+{"episode_idx": 111, "scene_annotation": "A robot arm is holding a camera over a cardboard box."}
 {"episode_idx": 112, "scene_annotation": "A robot arm is holding a cardboard box with a green light on its base."}
-{"episode_idx": 113, "scene_annotation": "A robot arm is positioned over a cardboard box, possibly preparing to manipulate or interact with it."}
+{"episode_idx": 113, "scene_annotation": "A robot arm is positioned over a cardboard box, possibly preparing to manipulate or inspect it."}
 {"episode_idx": 114, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, with one arm holding a green light."}
 {"episode_idx": 115, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
-{"episode_idx": 116, "scene_annotation": "A cardboard box is being held by two robotic arms in a laboratory setting."}
+{"episode_idx": 116, "scene_annotation": "A cardboard box is being held by two robotic arms."}
 {"episode_idx": 117, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 118, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
 {"episode_idx": 119, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
-{"episode_idx": 120, "scene_annotation": "A cardboard box is being scanned by two robotic arms equipped with cameras."}
+{"episode_idx": 120, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green lights."}
 {"episode_idx": 121, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green and blue lights."}
-{"episode_idx": 122, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
+{"episode_idx": 122, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 123, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
-{"episode_idx": 124, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green and blue lights."}
+{"episode_idx": 124, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
 {"episode_idx": 125, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
-{"episode_idx": 126, "scene_annotation": "A cardboard box is being scanned by two robotic arms equipped with cameras."}
+{"episode_idx": 126, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
 {"episode_idx": 127, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 128, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 129, "scene_annotation": "A cardboard box is being held by two robotic arms on a white surface."}
@@ -136,11 +136,11 @@
 {"episode_idx": 135, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
 {"episode_idx": 136, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, with one arm holding a green light."}
 {"episode_idx": 137, "scene_annotation": "A cardboard box is being held by two robotic arms."}
-{"episode_idx": 138, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green and blue lights."}
-{"episode_idx": 139, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
+{"episode_idx": 138, "scene_annotation": "A cardboard box is being scanned by two robotic arms equipped with cameras."}
+{"episode_idx": 139, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, with one arm holding a green object."}
 {"episode_idx": 140, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, with one arm holding a green light."}
 {"episode_idx": 141, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, with one arm holding a green light and the other holding a blue light."}
-{"episode_idx": 142, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
+{"episode_idx": 142, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 143, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 144, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 145, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
@@ -151,12 +151,12 @@
 {"episode_idx": 150, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
 {"episode_idx": 151, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
 {"episode_idx": 152, "scene_annotation": "A cardboard box is being held by two robotic arms in a laboratory setting."}
-{"episode_idx": 153, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box on a white surface."}
+{"episode_idx": 153, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, with one arm having a green light and the other having a blue light."}
 {"episode_idx": 154, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, possibly for packaging or handling purposes."}
 {"episode_idx": 155, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box, seemingly preparing to manipulate or interact with it."}
 {"episode_idx": 156, "scene_annotation": "Two robotic arms are positioned on either side of a cardboard box."}
 {"episode_idx": 157, "scene_annotation": "A robot arm is holding a cardboard box with a green light on its end effector."}
-{"episode_idx": 158, "scene_annotation": "A robot arm is holding a cardboard box with tape around it."}
+{"episode_idx": 158, "scene_annotation": "A robot arm is holding a cardboard box with a green light on its wrist."}
 {"episode_idx": 159, "scene_annotation": "A robot arm is holding a cardboard box with a green light on its end."}
 {"episode_idx": 160, "scene_annotation": "A cardboard box is being scanned by two robotic arms equipped with cameras."}
 {"episode_idx": 161, "scene_annotation": "A robot arm is holding a brown cardboard box with a green light on its arm."}
@@ -193,7 +193,7 @@
 {"episode_idx": 192, "scene_annotation": "A cardboard box is being scanned by two robotic arms equipped with cameras."}
 {"episode_idx": 193, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green lights."}
 {"episode_idx": 194, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green and blue lights."}
-{"episode_idx": 195, "scene_annotation": "Two robotic arms are positioned on either side of a wooden surface, with one arm having a green light on it."}
+{"episode_idx": 195, "scene_annotation": "Two robotic arms are positioned on either side of a wooden surface, with a green light visible on one of the robotic arms."}
 {"episode_idx": 196, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
 {"episode_idx": 197, "scene_annotation": "A cardboard box is being scanned by two robotic arms with green lights."}
 {"episode_idx": 198, "scene_annotation": "A cardboard box is being scanned by two robotic arms with cameras."}
