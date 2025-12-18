@@ -1,191 +1,196 @@
-import os
 import json
-import imageio
+import logging
 import shutil
 import tempfile
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+from typing import List, Tuple, Optional
+
+import imageio
 from PIL import Image
 from tqdm import tqdm
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
 
-# Configuration
-DATASET_DIR = "/mnt/nas/synnas/docker2/robocoin-pipeline/robocoin-datasets/RMC-AIDA-L_box_up_down/format_convert"
-CAMERA = "observation.images.cam_high_rgb"
-OUTPUT_FILE = "scene_annotations.jsonl"
+# --- Configuration ---
+DATASET_DIR = Path("/mnt/nas/synnas/docker2/robocoin-pipeline/robocoin-datasets/RMC-AIDA-L_box_up_down/format_convert")
+CAMERA_MATCH = "observation.images.cam_high_rgb"
+OUTPUT_FILE = Path("scene_annotations.jsonl")
 MODEL_ID = "Qwen/Qwen2-VL-7B-Instruct"
 NUM_EXTRACTORS = 10
+VIDEO_EXTENSIONS = {'.mp4', '.avi', '.mov', '.mkv'}
 
-def find_all_videos(dir_path, camera):
-    """
-    Recursively find all video files in the dataset directory that match the camera view.
-    """
-    paths = []
-    for root, dirnames, filenames in os.walk(dir_path):
-        if camera in root:
-            for filename in filenames:
-                if filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
-                    paths.append(os.path.join(root, filename))
-    paths.sort()
-    return paths
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
-def get_episode_idx(video_path):
-    """
-    Extract episode index from filename (e.g., 'episode_000000.mp4' -> 0).
-    """
+
+def get_episode_idx(file_path: Path) -> int:
+    """Extract episode index from filename (e.g., 'episode_000000.mp4' -> 0)."""
     try:
-        filename = os.path.basename(video_path)
-        episode_str = filename.split('_')[-1].split('.')[0]
-        return int(episode_str)
-    except:
+        # Assuming format like '..._123.mp4' or just numbers
+        stem = file_path.stem
+        parts = stem.split('_')
+        if parts:
+            return int(parts[-1])
+        return -1
+    except ValueError:
         return -1
 
-def extract_frame_task(worker_id, video_paths, temp_dir):
+
+def find_videos(root_dir: Path, match_str: str) -> List[Path]:
+    """Find all video files matching the criteria recursively."""
+    videos = []
+    for path in root_dir.rglob("*"):
+        if path.is_file() and path.suffix.lower() in VIDEO_EXTENSIONS:
+            if match_str in str(path):
+                videos.append(path)
+    return sorted(videos)
+
+
+def extract_frames_worker(video_paths: List[Path], output_dir: Path) -> List[Tuple[int, str]]:
     """
-    Worker function to extract first frame from assigned videos.
-    Assigns videos based on episode_idx % NUM_EXTRACTORS.
-    Returns a list of (episode_idx, temp_image_path).
+    Worker function to extract the first frame from a list of videos.
+    Returns a list of (episode_idx, frame_path_str).
     """
     results = []
-    # Assign tasks: only process videos where idx % NUM_EXTRACTORS == worker_id
-    my_videos = [v for v in video_paths if get_episode_idx(v) % NUM_EXTRACTORS == worker_id]
-    
-    for video_path in my_videos:
+    for video_path in video_paths:
+        episode_idx = get_episode_idx(video_path)
+        if episode_idx == -1:
+            continue
+
         try:
-            episode_idx = get_episode_idx(video_path)
+            # Using context manager for imageio reader
+            with imageio.get_reader(video_path) as reader:
+                first_frame = reader.get_data(0)
             
-            # Read first frame using imageio (ffmpeg backend)
-            reader = imageio.get_reader(video_path)
-            first_frame = reader.get_data(0)
-            reader.close()
-            
-            # Save frame to temp directory
-            save_path = os.path.join(temp_dir, f"{episode_idx}.jpg")
+            save_path = output_dir / f"{episode_idx}.jpg"
             Image.fromarray(first_frame).save(save_path)
+            results.append((episode_idx, str(save_path)))
             
-            results.append((episode_idx, save_path))
         except Exception as e:
-            # Silently ignore errors or log them if needed
-            # print(f"Error extracting {video_path}: {e}")
+            # Log error but don't crash the worker
+            # logger.warning(f"Failed to extract {video_path.name}: {e}")
             pass
             
     return results
 
+
 def main():
-    # 1. Find Videos
-    print(f"Scanning for videos in {DATASET_DIR}...")
-    video_paths = find_all_videos(DATASET_DIR, CAMERA)
-    print(f"Found {len(video_paths)} videos.")
+    # 1. Discovery
+    logger.info(f"Scanning for videos in {DATASET_DIR}...")
+    all_videos = find_videos(DATASET_DIR, CAMERA_MATCH)
+    logger.info(f"Found {len(all_videos)} videos.")
     
-    if not video_paths:
+    if not all_videos:
+        logger.warning("No videos found. Exiting.")
         return
 
-    # 2. Extract Frames (Parallel)
-    # We create a temporary directory to store extracted frames
-    temp_dir = tempfile.mkdtemp(prefix="vllm_frames_")
-    print(f"Extracting frames to {temp_dir} with {NUM_EXTRACTORS} processes...")
-    
-    valid_inputs = [] # List of (episode_idx, image_path)
-    
-    # Use ProcessPoolExecutor to launch 10 processes
-    with ProcessPoolExecutor(max_workers=NUM_EXTRACTORS) as executor:
-        # Submit tasks: each worker gets the FULL list of videos but only processes its share
-        futures = [executor.submit(extract_frame_task, i, video_paths, temp_dir) for i in range(NUM_EXTRACTORS)]
+    # 2. Parallel Extraction
+    # Use a TemporaryDirectory context manager for automatic cleanup
+    with tempfile.TemporaryDirectory(prefix="vllm_frames_") as temp_dir_str:
+        temp_dir = Path(temp_dir_str)
+        logger.info(f"Extracting frames to temporary directory: {temp_dir}")
+
+        # Distribute videos to workers based on idx % NUM_EXTRACTORS
+        # This pre-sorting avoids having every worker scan the full list
+        buckets: List[List[Path]] = [[] for _ in range(NUM_EXTRACTORS)]
+        for video in all_videos:
+            idx = get_episode_idx(video)
+            if idx != -1:
+                buckets[idx % NUM_EXTRACTORS].append(video)
+
+        valid_inputs: List[Tuple[int, str]] = []
         
-        # Wait for all to complete
-        for future in tqdm(as_completed(futures), total=NUM_EXTRACTORS, desc="Extracting"):
-            results = future.result()
-            valid_inputs.extend(results)
-    
-    # Sort by episode_idx for cleaner output
-    valid_inputs.sort(key=lambda x: x[0])
-    print(f"Successfully extracted {len(valid_inputs)} frames.")
-
-    if not valid_inputs:
-        print("No frames extracted. Exiting.")
-        shutil.rmtree(temp_dir)
-        return
-
-    # 3. vLLM Inference
-    print("Initializing vLLM...")
-    
-    # Initialize Processor for prompt formatting
-    print("Loading processor...")
-    processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
-
-    # Construct prompts for vLLM
-    prompt_text = "Describe the scene in this image in a single sentence."
-    
-    vllm_inputs = []
-    
-    print("Preparing inputs for vLLM...")
-    for idx, image_path in valid_inputs:
-        image = Image.open(image_path).convert("RGB")
-        
-        # Use processor to format the prompt correctly with special tokens
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image", "image": image_path}, # Valid path or placeholder
-                    {"type": "text", "text": prompt_text},
-                ],
-            }
-        ]
-        prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        
-        vllm_inputs.append({
-            "prompt": prompt,
-            "multi_modal_data": {
-                "image": image
-            },
-        })
-
-    # Initialize Engine
-    # gpu_memory_utilization=0.9 ensures we use most VRAM but leave some for activation overhead
-    # max_model_len limit helps to fit in memory
-    # max_num_seqs limited to reduce sampler memory usage
-    llm = LLM(
-        model=MODEL_ID,
-        max_model_len=4096, 
-        limit_mm_per_prompt={"image": 1},
-        trust_remote_code=True,
-        gpu_memory_utilization=0.9,
-        max_num_seqs=64,
-    )
-
-    sampling_params = SamplingParams(
-        temperature=0.0, # Greedy decoding for deterministic results
-        max_tokens=128,
-        stop_token_ids=None
-    )
-
-    print("Generating responses...")
-    # vLLM handles batching internally. It's much faster than manual loop.
-    outputs = llm.generate(vllm_inputs, sampling_params=sampling_params)
-
-    # 4. Save Results
-    print(f"Writing results to {OUTPUT_FILE}...")
-    with open(OUTPUT_FILE, 'w') as f:
-        for i, output in enumerate(outputs):
-            # vLLM outputs maintain the same order as inputs
-            idx = valid_inputs[i][0]
-            generated_text = output.outputs[0].text.strip()
+        with ProcessPoolExecutor(max_workers=NUM_EXTRACTORS) as executor:
+            futures = [
+                executor.submit(extract_frames_worker, bucket, temp_dir)
+                for bucket in buckets if bucket
+            ]
             
-            record = {
-                "episode_idx": idx,
-                "scene_annotation": generated_text
-            }
-            f.write(json.dumps(record) + "\n")
+            for future in tqdm(as_completed(futures), total=len(futures), desc="Extracting frames"):
+                valid_inputs.extend(future.result())
 
-    # Cleanup
-    print("Cleaning up temp files...")
-    shutil.rmtree(temp_dir)
-    print("Done!")
+        valid_inputs.sort(key=lambda x: x[0])
+        logger.info(f"Successfully extracted {len(valid_inputs)} frames.")
+
+        if not valid_inputs:
+            logger.error("No frames were extracted.")
+            return
+
+        # 3. vLLM Inference
+        logger.info("Initializing vLLM Processor...")
+        try:
+            processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
+        except Exception as e:
+            logger.error(f"Failed to load processor: {e}")
+            return
+
+        logger.info("Preparing vLLM inputs...")
+        prompt_text = "Describe the scene in this image in a single sentence."
+        vllm_inputs = []
+
+        for idx, image_path_str in valid_inputs:
+            # Create the prompt using the chat template
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": image_path_str},
+                        {"type": "text", "text": prompt_text},
+                    ],
+                }
+            ]
+            # Generate the full prompt string (handling <|vision_start|>, etc.)
+            text_prompt = processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            
+            # vLLM expects raw images (PIL) for multi_modal_data
+            image = Image.open(image_path_str).convert("RGB")
+            
+            vllm_inputs.append({
+                "prompt": text_prompt,
+                "multi_modal_data": {"image": image},
+            })
+
+        logger.info("Initializing vLLM Engine...")
+        llm = LLM(
+            model=MODEL_ID,
+            max_model_len=4096,
+            limit_mm_per_prompt={"image": 1},
+            trust_remote_code=True,
+            gpu_memory_utilization=0.9,  # Tuned for stability
+            max_num_seqs=64,             # Tuned to prevent OOM
+        )
+
+        sampling_params = SamplingParams(
+            temperature=0.0,
+            max_tokens=128,
+        )
+
+        logger.info("Running inference...")
+        outputs = llm.generate(vllm_inputs, sampling_params=sampling_params)
+
+        # 4. Save Results
+        logger.info(f"Saving results to {OUTPUT_FILE}...")
+        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+            for i, output in enumerate(outputs):
+                idx = valid_inputs[i][0]
+                generated_text = output.outputs[0].text.strip()
+                
+                record = {
+                    "episode_idx": idx,
+                    "scene_annotation": generated_text
+                }
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    logger.info("Processing complete.")
+
 
 if __name__ == "__main__":
-    # Ensure start method is spawn for compatibility if we used mp directly, 
-    # but here we use ProcessPoolExecutor which defaults to fork on Linux.
-    # Since we do extraction BEFORE loading vLLM (CUDA), fork is safe and faster.
-    # vLLM is loaded AFTER extraction is done.
     main()
