@@ -1,57 +1,69 @@
-# RoboCoin Scene Annotator
+# Scene Annotation Pipeline
 
-基于开放词汇目标检测器和大语言模型的机器人场景标注自动化生成工具
+High-performance, parallelized video scene annotation system using **vLLM** and **Qwen2-VL**.
 
-# 安装
+## 🚀 Key Features
 
-参考[Grounding DINO](https://github.com/IDEA-Research/GroundingDINO)
+*   **Client-Server Architecture**: Decoupled inference engine (vLLM) from data processing (Client).
+*   **Extreme Performance**:
+    *   **UDS (Unix Domain Socket)**: Zero-overhead communication between Client and Server (bypasses TCP/IP stack).
+    *   **Local Image Streaming**: Zero-copy image transfer via local HTTP server (avoids Base64 CPU bottleneck).
+    *   **Full Parallelism**: 
+        *   Server: Continuous Batching & PagedAttention.
+        *   Client: Multiprocess frame extraction + Async HTTP requests.
+*   **Robustness**: Automatic retry on failures, conditional cleanup, and graceful shutdown.
 
-# 使用方法
+## 🛠️ Architecture
 
-1. 从NAS上下载：
-浏览器打开：http://172.16.12.20:5000/
-账号：BAAI_XSX
-密码：BAAI123～
-下载路径：/docker2/robocoin-datasets
-其中每一个文件夹是一个数据集
-
-2. 解压到/home/diy02/RoboCoin-scene-annotator/datasets，如
-datasets
- |
- +-- realman_rmc_aidal_basket_storage_orange
-
-
-3. 运行命令：
-先打开终端
-```bash
-
-cd /home/diy02/RoboCoin-scene-annotator
-conda activate dino
-
-# repo_id这一行需要修改为要处理的数据集
-python scripts/run_pipeline.py \
-    --repo_id="agilex_cobot_decoupled_magic_take_out_the_bread" \
-    --repo_root="/mnt/nas/synnas/docker2/robocoin-datasets" \
-    --save_root="results/" \
-    --camera="observation.images.cam_front_rgb" \
-    --detector.type="grounding_dino" \
-    --detector.device=cuda \
-    --detector.visualize_first=5 \
-    --language_model.type="ollama" \
-    --language_model.model="deepseek-r1:14b" \
-    --language_model.think=False                    
+```mermaid
+graph TD
+    A[Dataset Videos] -->|ProcessPool (10 workers)| B(Frame Extractor)
+    B -->|Save JPEG| C[Local Storage /image]
+    C -->|Serve via HTTP| D[Local HTTP Server :8081]
+    
+    E[Client Request Worker] -->|UDS /tmp/vllm.sock| F[vLLM Server]
+    F -->|HTTP GET| D
+    F -->|Inference Result| E
+    
+    E -->|Write JSONL| G[scene_annotations.jsonl]
+    E -->|Delete Success| C
 ```
 
+## 📦 Installation
 
-3.1. 生成物品的文本，在results/prompts/<repo_id>.txt中
-3.2. 提取每个视频的第一帧，会打开一个窗口，需要从窗口中确认所有存在的物体，然后查看prompt文件中有没有缺失或多余的物体，如果有，则添加或删除。结果会放在results/frames/<repo_id>中
-3.3. 目标检测，会展示前5个检测结果，观察有没有问题，如果有就修改prompt文件，如将black basket, yellow basket合为basket，通过这种方法减轻检测难度。结果会放在results/annotations/<repo_id>中
-3.3.1. 如果检测有问题，按ctrl+c停止，修改文件，再重跑
-3.4. 生成描述。结果会放在results/annotatinos_refinde/<repo_id>中。至此任务完成
+1.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-特殊情况：
-1. 如果有修改了也无法识别物体的情况，单独记录下来，跳过这个任务
+2.  **Model Preparation**:
+    Ensure you have access to `Qwen/Qwen2-VL-7B-Instruct`.
 
-# 致谢
+## 🚦 Usage
 
-感谢[Grounding DINO](https://github.com/IDEA-Research/GroundingDINO), [Ollama](https://github.com/ollama/ollama)等优秀的作品！
+### 1. Start vLLM Server
+The server handles the heavy lifting (LLM inference). It listens on a Unix Socket for maximum speed.
+
+```bash
+./start_vllm_server.sh
+```
+*Wait until you see "Uvicorn running on..."*
+
+### 2. Run Annotation Client
+The client scans videos, extracts frames, and sends requests to the server in parallel.
+
+```bash
+python generate_scene_annotations_client.py
+```
+
+### 3. Configuration
+Modify `generate_scene_annotations_client.py` -> `Config` class:
+*   `NUM_REQUEST_WORKERS`: Concurrency level (default: 64).
+*   `SHOW_HTTP_LOGS`: Toggle verbose HTTP logs.
+*   `MAX_RETRIES`: Retry attempts for failed requests.
+
+## 📝 Output Format
+Results are saved to `scene_annotations_client.jsonl`:
+```json
+{"episode_idx": 123, "scene_annotation": "A robot arm picks up a red apple."}
+```
