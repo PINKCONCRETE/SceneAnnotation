@@ -221,4 +221,4 @@ __marimo__/
 
 local
 source
-scene_annotations_client.jsonl
+*.jsonl
