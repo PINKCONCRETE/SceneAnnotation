@@ -20,8 +20,8 @@ import httpx
 # --- Configuration ---
 @dataclass
 class Config:
-    DATASET_DIR: Path = Path("/mnt/nas/synnas/docker2/robocoin-pipeline/robocoin-datasets/RMC-AIDA-L_box_up_down/format_convert")
-    CAMERA_MATCH: str = "observation.images.cam_high_rgb"
+    DATASET_DIR: Path = Path("/mnt/nas/synnas/docker2/robocoin-datasets/Agilex_Split_Aloha_steamer_storage_baozi")
+    CAMERA_MATCH: str = "observation.images.cam_front_rgb"
     OUTPUT_FILE: Path = Path("scene_annotations_client.jsonl")
     MODEL_ID: str = "Qwen/Qwen2-VL-7B-Instruct"
     NUM_EXTRACTORS: int = 10
@@ -228,7 +228,8 @@ def main():
 
             # Parallel Inference
             logger.info(f"Sending requests to vLLM server at {config.API_BASE_URL}...")
-            prompt_text = "Describe the scene in this image in a single sentence."
+            #prompt_text = "List the objects in the image and their positions in a single line of plain text."
+            prompt_text = "Describe the scene by listing each visible object in the format \"[object] is in the [direction].\" using directional terms such as front, back, left, right, front-left, front-right, back-left, or back-right. Output all descriptions in a single line of plain text with no markdown formatting."
             results = []
 
             with ProcessPoolExecutor(max_workers=config.NUM_REQUEST_WORKERS) as executor:
