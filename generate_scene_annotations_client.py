@@ -20,8 +20,8 @@ import httpx
 # --- Configuration ---
 @dataclass
 class Config:
-    DATASET_DIR: Path = Path("/mnt/nas/synnas/docker2/robocoin-datasets/Agilex_Split_Aloha_steamer_storage_baozi")
-    CAMERA_MATCH: str = "observation.images.cam_front_rgb"
+    DATASET_DIR: Path = Path("/mnt/nas/synnas/docker2/robocoin-datasets/AIRBOT_MMK2_bowl_storage_pepper")
+    CAMERA_MATCH: str = "observation.images.cam_high_rgb"
     OUTPUT_FILE: Path = Path("scene_annotations_client.jsonl")
     MODEL_ID: str = "Qwen/Qwen2-VL-7B-Instruct"
     NUM_EXTRACTORS: int = 10
@@ -40,6 +40,10 @@ class Config:
     
     # Logging
     SHOW_HTTP_LOGS: bool = False # Set to True to see detailed HTTP request logs
+    
+    # Retry Logic
+    MAX_RETRIES: int = 3
+    RETRY_DELAY: float = 1.0 # Seconds
 
 config = Config()
 
@@ -132,53 +136,77 @@ def extract_frames_worker(video_paths: List[Path], output_dir: Path) -> List[Tup
 
 
 def send_request_task(idx: int, image_path: str, prompt: str) -> Dict[str, Any]:
-    """Send a single request to the vLLM server via UDS using Image URL."""
+    """Send a single request to the vLLM server via UDS using Image URL.
+    Retries on failures (including 400 errors). Deletes image only on success."""
+    image_path_obj = Path(image_path)
+    
+    # Construct local URL
     try:
-        image_path_obj = Path(image_path)
         rel_path = image_path_obj.relative_to(config.IMAGE_ROOT)
         image_url = f"http://localhost:{config.IMAGE_SERVER_PORT}/{rel_path}"
+    except ValueError:
+        print(f"Error: Image path {image_path} is not within IMAGE_ROOT")
+        return {"episode_idx": idx, "scene_annotation": ""}
 
-        transport = httpx.HTTPTransport(uds=config.UDS_PATH)
-        
-        client = OpenAI(
-            api_key=config.API_KEY,
-            base_url=config.API_BASE_URL,
-            http_client=httpx.Client(transport=transport),
-        )
-        
-        response = client.chat.completions.create(
-            model=config.MODEL_ID,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": image_url}},
-                    ],
-                }
-            ],
-            max_tokens=128,
-            temperature=0.0,
-        )
-        
-        generated_text = response.choices[0].message.content.strip()
-        
-        # Cleanup image file
+    transport = httpx.HTTPTransport(uds=config.UDS_PATH)
+    
+    # We create the client once per task (process-safe)
+    client = OpenAI(
+        api_key=config.API_KEY,
+        base_url=config.API_BASE_URL,
+        http_client=httpx.Client(transport=transport),
+        max_retries=0, # We handle retries manually to control image deletion
+    )
+
+    last_error = None
+    
+    for attempt in range(config.MAX_RETRIES + 1):
         try:
-            image_path_obj.unlink(missing_ok=True)
-        except OSError:
-            pass
+            response = client.chat.completions.create(
+                model=config.MODEL_ID,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": image_url}},
+                        ],
+                    }
+                ],
+                max_tokens=128,
+                temperature=0.0,
+            )
             
-        return {
-            "episode_idx": idx,
-            "scene_annotation": generated_text
-        }
-    except Exception as e:
-        print(f"Request failed for episode {idx}: {e}")
-        return {
-            "episode_idx": idx,
-            "scene_annotation": "" 
-        }
+            generated_text = response.choices[0].message.content.strip()
+            
+            # Success! Delete image
+            try:
+                image_path_obj.unlink(missing_ok=True)
+            except OSError:
+                pass
+                
+            return {
+                "episode_idx": idx,
+                "scene_annotation": generated_text
+            }
+            
+        except Exception as e:
+            last_error = e
+            # Log warning but continue to retry
+            if attempt < config.MAX_RETRIES:
+                # Calculate backoff: 1s, 2s, 4s...
+                sleep_time = config.RETRY_DELAY * (2 ** attempt)
+                # Using print for process-safety logging
+                print(f"Warning: Request failed for episode {idx} (Attempt {attempt+1}/{config.MAX_RETRIES+1}). Retrying in {sleep_time}s... Error: {e}")
+                time.sleep(sleep_time)
+            else:
+                # Final failure
+                print(f"Error: Request failed for episode {idx} after {config.MAX_RETRIES+1} attempts. Keeping image for inspection. Error: {e}")
+    
+    return {
+        "episode_idx": idx,
+        "scene_annotation": "" 
+    }
 
 
 def main():
