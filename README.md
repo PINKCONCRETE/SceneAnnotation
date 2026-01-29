@@ -17,7 +17,7 @@
 
 ```mermaid
 graph TD
-    A[数据集视频] -->|进程池 (10 workers)| B(视频帧提取器)
+    A[数据集视频] --> |进程池| B[视频帧提取器]
     B -->|保存 JPEG| C[本地存储 /image]
     C -->|HTTP 服务| D[本地 HTTP 服务器 :8081]
     
